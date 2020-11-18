@@ -54,7 +54,7 @@ def play():
             """)
         
 
-        name_user = raw_input("Je suis Python. Quel est votre pseudo ? ")
+        name_user = input("Je suis Python. Quel est votre pseudo ? ")
         if not name_user :
             print("Pseudo non valide")
         # elif name_user in PLAYERS :
@@ -68,7 +68,7 @@ def play():
     while(dotation != 0 and playQuestion == True):
         while True:
             print('Entrer une mise inférieure ou égale à {} € : ?'.format(dotation))
-            mise = raw_input()
+            mise = input()
             try:
                 mise = int(mise)
             except:
@@ -85,7 +85,7 @@ def play():
         while (nb_coup < currentLevel[0] ) :
             timeout = time.time() + 10
             while True :
-                nb_user = raw_input ("Entrez SVP votre nombre ? ")
+                nb_user = input ("Entrez SVP votre nombre ? ")
                 try:
                     nb_user = int(nb_user)
                         #Gerer l'exception de STRING
@@ -140,7 +140,7 @@ def askPlayer():
     '''
     global dotation, name_user
     while(True):
-        answer = raw_input("Bonjour "+ name_user +". Vous possedez €" + str(dotation) + ". Voulez vous jouer? ")
+        answer = input("Bonjour "+ name_user +". Vous possedez €" + str(dotation) + ". Voulez vous jouer? ")
         answer = answer.lower()
         if(answer == "yes" or answer == "y"):
             return True
@@ -157,7 +157,7 @@ def showRules():
     No case sensitivity in the answer. yes, YeS, y, y, nO . . . all works
     '''
     while(True):
-        answer = raw_input("Bonjour voulez vous connaitre les régles ? ")
+        answer = input("Bonjour voulez vous connaitre les régles ? ")
         answer = answer.lower()
         if(answer == "yes" or answer == "y"):
             return True
