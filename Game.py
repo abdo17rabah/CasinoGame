@@ -4,6 +4,7 @@ from Levels_list import *
 # from DB import *
 import time
 from threading import Timer
+from DB import *
 
 class Game:
     
@@ -12,7 +13,8 @@ class Game:
     TIMEOUT = 10
 
     def __init__(self ,levels_list):
-        # self.db = db
+        self.db = DB()
+        self.db.connectDB()
         self.levels_list=levels_list
         self.levels = levels_list.getLevels()
         self.player = None
@@ -60,9 +62,12 @@ class Game:
             #     print("Username exsiste déja")
             else:
                 print("Pseudo valide !")
+                player=self.db.addPlayer(name_user)
+                print(player)
+
                 # PLAYERS["Pseudo"] = name_user
-                self.setPlayer(Player(name_user))
-                self.dotation=self.player.getSolde()
+                # self.setPlayer(Player(name_user))
+                # self.dotation=self.player.getSolde()
                 break
 
             #Ask the player if he wants to know the rules of the game
