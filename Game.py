@@ -33,6 +33,7 @@ class Game:
         self.gainMin=0
         self.idPlayer = None
         self.cmpFirst = 0
+        self.maxLoss=0
         
         
         # self.db.connect()
@@ -66,7 +67,6 @@ class Game:
                 self.player=self.db.addPlayer(name_user)
                 self.dotation=self.player.getSolde()
                 break
-
             #Ask the player if he wants to know the rules of the game
             answer = self.askRules()
             if(answer == True):
@@ -94,17 +94,18 @@ class Game:
                     continue
                 
                 self.idPlayer = self.db.checkRegistredPlayer(name_user)['id']
-                #Update the minimal stake
+                self.idGame = self.db.displayGames(name_user)
                 self.miseMin=self.getMin(self.miseMin,self.mise)
                 self.maxMise=self.getMax(self.mise,self.maxMise)
-                # self.db.updateTable('stats','miseMin',self.maxMise,self.idPlayer,name_user)
-                # self.db.updateTable('stats','miseMax',self.maxMise,self.idPlayer,name_user)
+                self.db.updateStats('miseMin',self.maxMise,self.idPlayer,name_user,self.idGame['id'])
+                self.db.updateStats('miseMax',self.maxMise,self.idPlayer,name_user,self.idGame['id'])
+
                 break
             self.nb_python = self.currentLevel.getRandomNumber(self.currentLevel.getRange1(),self.currentLevel.getRange2())
             print("#### nb_python "+str(self.nb_python))
             while (self.nb_coup < self.currentLevel.getCount() ) :
-                timeout = time.time() + self.TIMEOUT
                 while True :
+                    timeout = time.time() + self.TIMEOUT
                     self.nb_user = input ("Entrez SVP votre nombre ? ")
                     try:
                         self.nb_user = int(self.nb_user)
@@ -117,9 +118,10 @@ class Game:
                     if time.time() > timeout:
                         triesLeft = self.currentLevel.getCount() - (self.nb_coup+1)
                         print("Vous avez dépassé le délai de 10 secondes ! Vous perdez l'essai courant\n\t\t\t et il vous reste {} essai(s) !" .format(triesLeft))
+                        self.nb_coup+= 1
                         continue
+                    self.nb_coup+= 1
                     break
-                self.nb_coup+= 1
                 if self.nb_user > self.nb_python :
                     print ('Votre nbre est trop grand')
                 elif self.nb_user < self.nb_python :
@@ -127,73 +129,51 @@ class Game:
                 else :
                     print ("Bingo ! Vous avez gagné en {} coup(s) !".format(self.nb_coup))
                     
-                    cote=self.level.getCote()[self.nb_coup-1]
+                    cote=self.currentLevel.getCote()
+                    cote=cote[self.nb_coup-1]
                     if(self.nb_coup == 1):
                         self.cmpFirst +=1
+                        self.db.updateStats('firstTryNumber', self.cmpFirst, self.idPlayer, name_user,self.idGame['id'])
+
                     self.dotation = (self.player.getSolde()-self.mise)+(self.mise*cote)
                     self.gain += (self.mise*cote)-self.mise
                     self.player.setSolde(self.dotation)
                     self.maxLevel=self.getMax(self.level,self.maxLevel)
+                    self.db.updateStats('gainMax', self.gain, self.idPlayer,name_user,self.idGame['id'])
+                    self.db.updateStats('levelMax', self.level, self.idPlayer, name_user,self.idGame['id'])
+                    self.db.updateTable('players','solde', self.dotation, self.idPlayer, name_user)
+
                     #TODO: gainMin : (La cote la plus elevée * la mise la plus petite =1 ) + (somme - mise)
-
-                    #self.db.updateTable('stats','firstTryNumber', self.cmpFirst, self.idPlayer, name_user)
-
-                    # if(self.nb_coup == 1):
-                    #     self.cmpFirst +=1
-                    #     self.dotation = (self.player.getSolde()-self.mise)+(self.mise*cote)
-                    #     self.gain += (self.mise*cote)-self.mise
-                    #     self.player.setSolde(self.dotation)
-                    #     #self.db.updateTable('stats','firstTryNumber', self.cmpFirst, self.idPlayer, name_user)
-
-                    # elif (self.nb_coup == 2 ):
-                    #     self.dotation = (self.player.getSolde()-self.mise)+(self.mise*cote)
-                    #     self.player.setSolde(self.dotation)
-                    #     self.gain += (self.mise*cote)-self.mise
-                    # else :
-                    #     self.dotation = (self.player.getSolde()-self.mise)+(self.mise*cote)
-                    #     self.player.setSolde(self.dotation)
-                    #     self.gain += (self.mise*cote)-self.mise
-
-                    # self.db.updateTable('Player','solde', self.dotation, self.idPlayer, name_user)
-                    #
-                    # self.db.updateTable('stats','gainMax', self.gain, self.idPlayer,name_user)
-                    # self.db.updateTable('stats','levelMax', self.level, self.idPlayer, name_user)
-                    
-                    #self.askPlayer()
+                    self.gainMin+=(self.miseMin * cote)-self.miseMin
 
                     self.level+=1
                     if(self.level > self.levels_list.getNumberLevels()):
-                        print ("""Bravo ! Vous avez terminer le jeu, vos stats sont :  !\n+
-                                \t- Gain Maximal : {}!\n
-                                \t- Mise Maximale : {}!\n
-                                \t- Level Maximale : {}!\n
-                                #TODO : ajouter d'autres states (grosse perte, level min, mise min)
-                        """.format(self.gain,self.maxMise,self.maxLevel))
-                        #TODO: show stats
-                        #self.player.showPlayerStats()
-                        #TODO : ask the player if he wants to play again
                         self.gameEnded=True
                         self.askPlayer()
+                        
                     else :
                         print ("Super ! Vous passez au Level: {}!\n".format(self.level))
                         self.currentLevel = self.levels_list.getLevel(self.level-1)
                         self.nb_coup=0
+                        self.askPlayer()
                     break
             
-            #TODO: Gerer les levels
             if (self.nb_user!=self.nb_python) :
                 print ("Vous avez perdu, mon nombre choisi est :"+ str(self.nb_python))
-                #TODO: changement de mise aprés la perte
                 self.dotation-=self.mise
                 self.player.setSolde(self.dotation)
+                self.maxLoss=self.getMax(self.mise,self.maxLoss)
                 if(self.level == 0):
                     self.currentLevel = self.levels_list.getLevel(0)
                 else:
                     self.currentLevel = self.levels_list.getLevel(self.level-1)
                 self.nb_coup=0
+                self.askPlayer()
             if(self.dotation == 0) :
                 print ("Vous avez perdu, vous n'avez plus de solde €:"+ str(self.dotation))
+                self.show()
                 self.gameEnded = True
+                sys.exit()
                 break
 
         # printScore()
@@ -215,21 +195,12 @@ class Game:
                     self.nb_coup=0
                     return True
                 elif(answer == "no" or answer == "n"):
-                    #Update all tables before quiting
-                    self.db.updateTable('stats','miseMin',self.maxMise,self.idPlayer,self.player.getUserName())
-                    self.db.updateTable('stats','miseMax',self.maxMise,self.idPlayer,self.player.getUserName())
-                    self.db.updateTable('stats','firstTryNumber', self.cmpFirst, self.idPlayer, self.player.getUserName())
-                    self.db.updateTable('stats','gainMax', self.gain, self.idPlayer,self.player.getUserName())
-                    self.db.updateTable('stats','levelMax', self.level, self.idPlayer, self.player.getUserName())
-                    self.db.updateTable('Player','solde', self.dotation, self.idPlayer, self.player.getUserName())
-                    
-
-
                     print("Vous avez terminé votre partie avec €" + str(self.player.getSolde()) + " de solde.")
+                    self.show()
                     sys.exit()
                 else:
                     print("wrong input!")
-                    
+
             else :
                 answer = input("Bonjour "+ self.player.getUserName() +". Vous possedez €" + str(self.player.getSolde()) + ". Voulez vous jouer(Y/N)? ")
                 answer = answer.lower()
@@ -237,6 +208,7 @@ class Game:
                     return True
                 elif(answer == "no" or answer == "n"):
                     print("Vous avez terminé votre partie avec €" + str(self.player.getSolde()) + " de solde.")
+                    self.show()
                     sys.exit()
                 else:
                     print("wrong input!")
@@ -293,3 +265,23 @@ class Game:
                     \t\t- de quitter le jeu.\n
                     \t- Dès que vous devinez mon nombre : vous avez le droit de quitter le jeu et de partir avec vos gains OU \n\t\tde continuer le jeu en passant au level supérieur.\n     
                     """)
+
+    def show(self) :
+        print ("""\t************ Vos meilleures stats ************ \n
+                \t- Réponse dés le premier coup : {}!\n
+                \t- Gain Maximal : {}!\n
+                \t- Mise Maximale : {}!\n
+                \t- Level Maximale : {}!\n
+                ************ Vos Mauvaises stats ************ \n
+                \t- Gain minimal : {}!\n
+                \t- Mise minimale : {}!\n
+                \t- Grosse Perte : {}!\n
+                """.format(
+                self.cmpFirst ,
+                self.gain,
+                self.maxMise,
+                self.maxLevel,
+                self.gainMin,
+                self.miseMin,
+                self.maxLoss
+                ))

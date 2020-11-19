@@ -1,3 +1,4 @@
+#coding:utf-8
 from Player import *
 
 class Stats:
@@ -58,11 +59,11 @@ class Stats:
         return self.firstTriesCount
 
     def show(self) :
-        print ("""************ Vos meilleures stats ************ \n+
+        print ("""************ Vos meilleures stats ************ \n
                 \t- Réponse dés le premier coup : {}!\n
                 \t- Gain Maximal : {}!\n
                 \t- Mise Maximale : {}!\n
-                \t- Level Maximale : {}!\n+
+                \t- Level Maximale : {}!\n
                 ************ Vos Mauvaises stats ************ \n+
                 \t- Gain minimal : {}!\n
                 \t- Mise minimale : {}!\n
