@@ -6,6 +6,7 @@ class Level :
         self.count = count
         self.range1=range1
         self.range2=range2
+        self.cote = None
 
     def getCount(self):
         return self.count
@@ -24,6 +25,12 @@ class Level :
 
     def getRange2(self):
         return self.range2
+
+    def setCote(self,cote):
+        self.cote = cote
+
+    def getCote(self):
+        return self.cote
 
     def getRandomNumber(self,range1,range2):
     # '''

@@ -1,17 +1,17 @@
 #coding:utf-8
 from Player import *
 from Levels_list import *
+from Stats import *
 # from DB import *
 import time
 from threading import Timer
 from DB import *
+import sys
 
 class Game:
     
-
     #Const
     TIMEOUT = 10
-
     def __init__(self ,levels_list):
         self.db = DB()
         self.db.connectDB()
@@ -29,6 +29,10 @@ class Game:
         self.gain=0
         self.maxLevel=0
         self.maxMise=0
+        self.miseMin=0
+        self.gainMin=0
+        self.idPlayer = None
+        self.cmpFirst = 0
         
         
         # self.db.connect()
@@ -54,29 +58,22 @@ class Game:
     def play(self):
         # Check if the user exists or not, if not create a new one
         while True:
-            #TODO: check if the player exist in the table 
             name_user = input("Je suis Python. Quel est votre pseudo ? ")
             if not name_user :
                 print("Pseudo non valide")
-            # elif name_user in PLAYERS :
-            #     print("Username exsiste déja")
             else:
                 print("Pseudo valide !")
-                player=self.db.addPlayer(name_user)
-                print(player)
-
-                # PLAYERS["Pseudo"] = name_user
-                # self.setPlayer(Player(name_user))
-                # self.dotation=self.player.getSolde()
+                self.player=self.db.addPlayer(name_user)
+                self.dotation=self.player.getSolde()
                 break
 
             #Ask the player if he wants to know the rules of the game
-            #TODO : Condtion to Check if the player has played already then ask if not show the rules
             answer = self.askRules()
             if(answer == True):
                 self.showRules()
 
-        
+        #TODO: Verify the count of miseMin
+        self.miseMin=self.player.getSolde()
         playQuestion = self.askPlayer()
         while(self.dotation != 0 and playQuestion == True):
             while True:
@@ -95,10 +92,16 @@ class Game:
                 if self.mise > self.dotation :
                     print('Erreur, votre mise est plus elevé que votre solde.: '+str(self.dotation ))
                     continue
-                self.maxMise=self.compare(self.mise,self.maxMise)
+                
+                self.idPlayer = self.db.checkRegistredPlayer(name_user)['id']
+                #Update the minimal stake
+                self.miseMin=self.getMin(self.miseMin,self.mise)
+                self.maxMise=self.getMax(self.mise,self.maxMise)
+                # self.db.updateTable('stats','miseMin',self.maxMise,self.idPlayer,name_user)
+                # self.db.updateTable('stats','miseMax',self.maxMise,self.idPlayer,name_user)
                 break
             self.nb_python = self.currentLevel.getRandomNumber(self.currentLevel.getRange1(),self.currentLevel.getRange2())
-            print("#### nb_python"+str(self.nb_python))
+            print("#### nb_python "+str(self.nb_python))
             while (self.nb_coup < self.currentLevel.getCount() ) :
                 timeout = time.time() + self.TIMEOUT
                 while True :
@@ -114,7 +117,7 @@ class Game:
                     if time.time() > timeout:
                         triesLeft = self.currentLevel.getCount() - (self.nb_coup+1)
                         print("Vous avez dépassé le délai de 10 secondes ! Vous perdez l'essai courant\n\t\t\t et il vous reste {} essai(s) !" .format(triesLeft))
-                        break
+                        continue
                     break
                 self.nb_coup+= 1
                 if self.nb_user > self.nb_python :
@@ -123,20 +126,41 @@ class Game:
                     print ('Votre nbre est trop petit')
                 else :
                     print ("Bingo ! Vous avez gagné en {} coup(s) !".format(self.nb_coup))
+                    
+                    cote=self.level.getCote()[self.nb_coup-1]
                     if(self.nb_coup == 1):
-                        self.dotation = (self.player.getSolde()-self.mise)+(self.mise*2)
-                        self.gain += (self.mise*2)-self.mise
-                        self.player.setSolde(self.dotation)
+                        self.cmpFirst +=1
+                    self.dotation = (self.player.getSolde()-self.mise)+(self.mise*cote)
+                    self.gain += (self.mise*cote)-self.mise
+                    self.player.setSolde(self.dotation)
+                    self.maxLevel=self.getMax(self.level,self.maxLevel)
+                    #TODO: gainMin : (La cote la plus elevée * la mise la plus petite =1 ) + (somme - mise)
 
-                    elif (self.nb_coup == 2 ):
-                        self.dotation = (self.player.getSolde()-self.mise)+self.mise
-                        self.player.setSolde(self.dotation)
-                        self.gain += (self.mise)-self.mise
-                    else :
-                        self.dotation = (self.player.getSolde()-self.mise)+(self.mise/2)
-                        self.player.setSolde(self.dotation)
-                        self.gain += (self.mise/2)-self.mise
-                    self.maxLevel=self.compare(self.level,self.maxLevel)
+                    #self.db.updateTable('stats','firstTryNumber', self.cmpFirst, self.idPlayer, name_user)
+
+                    # if(self.nb_coup == 1):
+                    #     self.cmpFirst +=1
+                    #     self.dotation = (self.player.getSolde()-self.mise)+(self.mise*cote)
+                    #     self.gain += (self.mise*cote)-self.mise
+                    #     self.player.setSolde(self.dotation)
+                    #     #self.db.updateTable('stats','firstTryNumber', self.cmpFirst, self.idPlayer, name_user)
+
+                    # elif (self.nb_coup == 2 ):
+                    #     self.dotation = (self.player.getSolde()-self.mise)+(self.mise*cote)
+                    #     self.player.setSolde(self.dotation)
+                    #     self.gain += (self.mise*cote)-self.mise
+                    # else :
+                    #     self.dotation = (self.player.getSolde()-self.mise)+(self.mise*cote)
+                    #     self.player.setSolde(self.dotation)
+                    #     self.gain += (self.mise*cote)-self.mise
+
+                    # self.db.updateTable('Player','solde', self.dotation, self.idPlayer, name_user)
+                    #
+                    # self.db.updateTable('stats','gainMax', self.gain, self.idPlayer,name_user)
+                    # self.db.updateTable('stats','levelMax', self.level, self.idPlayer, name_user)
+                    
+                    #self.askPlayer()
+
                     self.level+=1
                     if(self.level > self.levels_list.getNumberLevels()):
                         print ("""Bravo ! Vous avez terminer le jeu, vos stats sont :  !\n+
@@ -191,8 +215,18 @@ class Game:
                     self.nb_coup=0
                     return True
                 elif(answer == "no" or answer == "n"):
+                    #Update all tables before quiting
+                    self.db.updateTable('stats','miseMin',self.maxMise,self.idPlayer,self.player.getUserName())
+                    self.db.updateTable('stats','miseMax',self.maxMise,self.idPlayer,self.player.getUserName())
+                    self.db.updateTable('stats','firstTryNumber', self.cmpFirst, self.idPlayer, self.player.getUserName())
+                    self.db.updateTable('stats','gainMax', self.gain, self.idPlayer,self.player.getUserName())
+                    self.db.updateTable('stats','levelMax', self.level, self.idPlayer, self.player.getUserName())
+                    self.db.updateTable('Player','solde', self.dotation, self.idPlayer, self.player.getUserName())
+                    
+
+
                     print("Vous avez terminé votre partie avec €" + str(self.player.getSolde()) + " de solde.")
-                    return False
+                    sys.exit()
                 else:
                     print("wrong input!")
                     
@@ -203,7 +237,7 @@ class Game:
                     return True
                 elif(answer == "no" or answer == "n"):
                     print("Vous avez terminé votre partie avec €" + str(self.player.getSolde()) + " de solde.")
-                    return False
+                    sys.exit()
                 else:
                     print("wrong input!")
 
@@ -224,8 +258,14 @@ class Game:
             else:
                 print("wrong input!")
 
-    def compare(self,elem1,elem2):
+    def getMax(self,elem1,elem2):
         if(elem1>=elem2):
+            return elem1
+        else :
+            return elem2
+
+    def getMin(self,elem1,elem2):
+        if(elem1<=elem2):
             return elem1
         else :
             return elem2
