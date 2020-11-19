@@ -97,7 +97,7 @@ class Game:
                 self.idGame = self.db.displayGames(name_user)
                 self.miseMin=self.getMin(self.miseMin,self.mise)
                 self.maxMise=self.getMax(self.mise,self.maxMise)
-                self.db.updateStats('miseMin',self.maxMise,self.idPlayer,name_user,self.idGame['id'])
+                self.db.updateStats('miseMin',self.miseMin,self.idPlayer,name_user,self.idGame['id'])
                 self.db.updateStats('miseMax',self.maxMise,self.idPlayer,name_user,self.idGame['id'])
 
                 break
