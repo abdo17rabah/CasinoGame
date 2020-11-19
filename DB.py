@@ -24,7 +24,7 @@ class DB:
     def connectDB(self):
         self.connection = pymysql.connect(host="127.0.0.1",
         user="root",
-        passwd="Mysticfulls1",
+        passwd="",
         database="casino",
         charset='utf8mb4',
         
