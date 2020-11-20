@@ -19,7 +19,7 @@
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#structure)
 
-## Structure : Les classes 
+## Structure du Projet :  
 * Game : Class qui représente une partie de jeu
 * Level : Classe qui représente un niveau de jeu
 * Player: Classe qui represente un joueur
@@ -27,6 +27,11 @@
 * Levels_list : Classe qui représente une liste des niveaux de jeu
 * CasinoGame : Main class qui permet de lancer le jeu
 * DB: Class qui permet de gérer les accés à la DB et de récuperer les données 
+
+![Alt text](CasinoGame/Capture d’écran 2020-11-20 à 13.27.21.png?raw=true "Class Diagramm")
+![Alt text](CasinoGame/Tableau vierge.png?raw=true "Usecase Diagramm")
+![Alt text](CasinoGame/Capture d’écran 2020-11-20 à 13.25.59.png?raw=true "DB Structure")
+
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#demarrage)
 
