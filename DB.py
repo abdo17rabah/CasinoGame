@@ -5,16 +5,13 @@ import pymysql.cursors
 from pymysql.cursors import Cursor
 from Stats import *
 
+# Class qui permet de gérer les accés à la DB et de récuperer les données 
 
 class DB:
 
     today = date.today()
-
+    #Constructeur
     def __init__(self):
-        #Read config.ini file
-        # self.config_object = ConfigParser()
-        # self.config_object.read("config.ini")
-        # self.db = self.config_object["DATABASE"]
         self.player = None
         self.connection = None
         self.stats= Stats()
@@ -22,6 +19,9 @@ class DB:
 
     
     def connectDB(self):
+        '''
+            Se connecter à la BD
+        '''
         self.connection = pymysql.connect(host="127.0.0.1",
         user="root",
         passwd="",
@@ -31,13 +31,16 @@ class DB:
         cursorclass=pymysql.cursors.DictCursor)
         return self.connection
 
-    def getAllPlayers(self):
-        sql = "SELECT name FROM players"
-
     def addPlayer(self,username):
+        '''
+            Permet d'ajouter un joueur à la BD et de créer des lignes dans les tables Game et Stats qui corresponds au joueur
+        '''
 
-        checkPlayer = self.checkRegistredPlayer(username) 
+        checkPlayer = self.checkRegistredPlayer(username) # Tester si le joueur exsiste dans la BD
         if(checkPlayer== None):
+            '''
+                initialiser les lignes dans les Tables Player, Game, Stats pour le nouveau Joueur
+            '''
             try:
                 with self.connection.cursor() as cursor:
                     sql = "INSERT INTO players ( name,created_at,solde ) VALUES ( %s,%s,%s )"
@@ -67,12 +70,12 @@ class DB:
             #self.player.setStats(self.stats)
                 
         else :
+            '''
+                Recupérer les lignes dans les Tables Player, Game, Stats pour le Joueur déja existant
+            '''
             self.player =Player(username)
             self.player.setSolde(checkPlayer['solde'])
             stats = self.displayStats(checkPlayer['id'])
-            #TODO : request to get all stats of the player
-            #TODO : initialize the player' stats
-            #self.stats.updateAllStats()
             print ("""Comme on se retrouve voici vos stats depuis le {} :  !\n
                                 \t- Gain Maximal : {} € !\n
                                 \t- Gain Minimal : {} € :(\n
@@ -88,6 +91,9 @@ class DB:
         return self.player
     #TODO
     def checkRegistredPlayer(self,username):
+        '''
+            Permet de vérifier si le joueur existe dans la BD
+        '''
         try:
             with self.connection.cursor() as cursor:
                 
@@ -99,10 +105,10 @@ class DB:
             # self.closeConnection()
             print(ValueError)
 
-    # #TODO
-    # def getPlayerStats(self,username):
     def displayStats(self,idPlayer):
-        # checkPlayer = self.checkRegistredPlayer(username)
+        '''
+            Permet de récuperer les stats du joueur de la table Stats
+        '''
         tabStats = {}
         try:
             with self.connection.cursor() as cursor:
@@ -116,10 +122,10 @@ class DB:
         finally:
             self.connection.cursor().close()
 
-    # #TODO
-    # def getPlayerStats(self,username):
-
     def updateTable(self,table,champs, val, idPlayer, username):
+        '''
+            Permet de mettre un joueur les champs tables
+        '''
         checkPlayer = self.checkRegistredPlayer(username)
         if(checkPlayer != None):
             try:
@@ -139,26 +145,28 @@ class DB:
             print("Player introuvable")
 
     def updateStats(self,champs, val, idPlayer, username, idGame):
+        '''
+            Permet de mettre les stats d'un joueur
+        '''
         checkPlayer = self.checkRegistredPlayer(username)
         if(checkPlayer != None):
             try:
                 with self.connection.cursor() as cursor :
-                    
-                    # print(cursor.execute(sql, Vall))
                     cursor.execute(("UPDATE stats SET " +champs+ "=" +str(val)+ "  WHERE idPlayer = %s AND idGame= %s "),(idPlayer,idGame,))
                     self.connection.commit()
-                    # print(cursor.rowcount, "record(s) affected")
             except ValueError:
                 print(ValueError)
                 print("ERROR dans updateStats")
             finally:
                 self.connection.cursor().close()
-                # self.closeConnection()
         else:
             print("Player introuvable")
     
     def addNewGame(self,idPlayer,username):
-        checkPlayer = self.checkRegistredPlayer(username)
+        '''
+            Initialiser une nouvelle ligne pour une nouvelle partie du jeu
+        '''
+        checkPlayer = self.checkRegistredPlayer(username) #Verifier si le joueur existe
         if(checkPlayer != None):
             try:
                 with self.connection.cursor() as cursor :
@@ -177,6 +185,9 @@ class DB:
             print("Player introuvable")
 
     def displayGames(self,username):
+        '''
+            Recupérer toutes les parties d'un joueur
+        '''
         checkPlayer = self.checkRegistredPlayer(username)
         try:
             with self.connection.cursor() as cursor :
@@ -188,17 +199,16 @@ class DB:
                     for row in games:
                         tabStats.update(row)
                     return tabStats
-                    # print(cursor.rowcount, "record(s) affected")
         except ValueError:
                 print(ValueError)
                 print("ERROR dans displayGames")
         finally:
                 self.connection.cursor().close()
-                # self.closeConnection()
-
-
 
     def addStats(self, username,idGame):
+        '''
+            Ajouter une nouvelle ligne de stats d'un joueur
+        '''
         checkPlayer = self.checkRegistredPlayer(username)
         if(checkPlayer != None):
             try:
@@ -211,8 +221,6 @@ class DB:
             finally:
                 self.connection.cursor().close
 
-
-    # make a habit to close the database connection once you create it 
     def closeConnection(self):
         self.connection.close()
 

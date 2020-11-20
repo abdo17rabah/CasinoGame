@@ -9,9 +9,12 @@ from DB import *
 import sys
 
 class Game:
-    
+    # Class qui représente une partie de jeu
+
     #Const
     TIMEOUT = 10
+    
+    #Constructeur
     def __init__(self ,levels_list):
         self.db = DB()
         self.db.connectDB()
@@ -34,10 +37,8 @@ class Game:
         self.idPlayer = None
         self.cmpFirst = 0
         self.maxLoss=0
-        
-        
-        # self.db.connect()
 
+    #Setters
     def setPlayer(self, player):
         self.player=player
 
@@ -57,7 +58,9 @@ class Game:
         self.dotation=dotation
 
     def play(self):
-        # Check if the user exists or not, if not create a new one
+        '''
+            Permet de lancer le jeu
+        '''
         while True:
             name_user = input("Je suis Python. Quel est votre pseudo ? ")
             if not name_user :
@@ -67,18 +70,18 @@ class Game:
                 self.player=self.db.addPlayer(name_user)
                 self.dotation=self.player.getSolde()
                 break
-            #Ask the player if he wants to know the rules of the game
+        #Ask the player if he wants to know the rules of the game
         answer = self.askRules()
         if(answer == True):
             self.showRules()
 
-        #TODO: Verify the count of miseMin
+        #Initialisation
         self.miseMin=self.player.getSolde()
-        self.gainMin = self.player.getSolde()
+        self.gainMin=self.player.getSolde()
         playQuestion = self.askPlayer()
         while(self.dotation != 0 and playQuestion == True):
             while True:
-                #TODO : update "mise" in stats 
+                # Demander au joueur de miser
                 print ("### current level : "+ self.currentLevel.ToString())
                 print('Entrer une mise inférieure ou égale à {} € : ?'.format(self.dotation ))
                 self.mise = input()
@@ -98,13 +101,15 @@ class Game:
                 self.idGame = self.db.displayGames(name_user)
                 self.miseMin=self.getMin(self.miseMin,self.mise)
                 self.maxMise=self.getMax(self.mise,self.maxMise)
+                #Mettre à jour les valeurs dans la BD
                 self.db.updateStats('miseMin',self.miseMin,self.idPlayer,name_user,self.idGame['id'])
                 self.db.updateStats('miseMax',self.maxMise,self.idPlayer,name_user,self.idGame['id'])
-
                 break
+            # Generer un nombre random
             self.nb_python = self.currentLevel.getRandomNumber(self.currentLevel.getRange1(),self.currentLevel.getRange2())
             print("#### nb_python "+str(self.nb_python))
             while (self.nb_coup < self.currentLevel.getCount() ) :
+                # Demander au joueur de saisir un nombre qui correspond au nombre tiré par hasard
                 while True :
                     timeout = time.time() + self.TIMEOUT
                     self.nb_user = input ("Entrez SVP votre nombre ? ")
@@ -117,12 +122,14 @@ class Game:
                         print('Entrez a positive number.')
                         continue
                     if time.time() > timeout:
+                        # Verifier que le délai de 10 sec n'a pas été franchis
                         triesLeft = self.currentLevel.getCount() - (self.nb_coup+1)
                         print("Vous avez dépassé le délai de 10 secondes ! Vous perdez l'essai courant\n\t\t\t et il vous reste {} essai(s) !" .format(triesLeft))
                         self.nb_coup+= 1
                         continue
                     self.nb_coup+= 1
                     break
+                #Verifier la réponse du joueur
                 if self.nb_user > self.nb_python :
                     print ('Votre nbre est trop grand')
                 elif self.nb_user < self.nb_python :
@@ -135,25 +142,24 @@ class Game:
                     if(self.nb_coup == 1):
                         self.cmpFirst +=1
                         self.db.updateStats('firstTryNumber', self.cmpFirst, self.idPlayer, name_user,self.idGame['id'])
-
+                    # Calculer le gain, le nouveau solde, mise minimal, etc
                     self.dotation = (self.player.getSolde()-self.mise)+(self.mise*cote)
                     self.gain += (self.mise*cote)-self.mise
-                    self.gainMin =self.getMin(self.gainMin, self.gain)
+                    self.gainMin=self.getMin(self.gainMin,self.gain)
                     self.player.setSolde(self.dotation)
                     self.maxLevel=self.getMax(self.level,self.maxLevel)
+                    # Mettre à jour les champs dans la BD
                     self.db.updateStats('gainMin', self.gainMin,self.idPlayer,name_user,self.idGame['id'])
                     self.db.updateStats('gainMax', self.gain, self.idPlayer,name_user,self.idGame['id'])
                     self.db.updateStats('levelMax', self.level, self.idPlayer, name_user,self.idGame['id'])
                     self.db.updateTable('players','solde', self.dotation, self.idPlayer, name_user)
-
-                    #TODO: gainMin : (La cote la plus elevée * la mise la plus petite =1 ) + (somme - mise)
                     
-
+                    # Aller au niveau suivant aprés un succés
                     self.level+=1
                     if(self.level > self.levels_list.getNumberLevels()):
+                        # Si le joueur arrive au dernier niveau 
                         self.gameEnded=True
                         self.askPlayer()
-                        
                     else :
                         print ("Super ! Vous passez au Level: {}!\n".format(self.level))
                         self.currentLevel = self.levels_list.getLevel(self.level-1)
@@ -166,6 +172,7 @@ class Game:
                 self.dotation-=self.mise
                 self.player.setSolde(self.dotation)
                 self.maxLoss=self.getMax(self.mise,self.maxLoss)
+                # Si le joueur perd il retourne au niveau précédent
                 if(self.level == 0):
                     self.currentLevel = self.levels_list.getLevel(0)
                 else:
@@ -178,15 +185,13 @@ class Game:
                 self.gameEnded = True
                 sys.exit()
                 break
-
-        # printScore()
         playQuestion = self.askPlayer()
         
     def askPlayer(self):
         '''
-        Asks the player if he wants to play again.
-        expecting from the user to answer with yes, y, no or n
-        No case sensitivity in the answer. yes, YeS, y, Y, nO . . . all works
+        Demander au joueur s'il veut rejoueur
+        Réponse yes, y, no or n
+        No case sensitivity in the answer. yes, YeS, y, Y, nO . . . 
         '''
         while(True):
             if(self.gameEnded ==True):
@@ -218,9 +223,9 @@ class Game:
 
     def askRules(self):
         '''
-        Asks the player if he wants to know the rules.
-        expecting from the user to answer with yes, y, no or n
-        No case sensitivity in the answer. yes, YeS, y, y, nO . . . all works
+        Demander au joueur s'il veut voir les régles du jeu
+        Réponse yes, y, no or n
+        No case sensitivity in the answer. yes, YeS, y, Y, nO . . . 
         '''
         while(True):
             answer = input("Bonjour voulez vous connaitre les régles (Y/N) ? ")
@@ -240,13 +245,16 @@ class Game:
             return elem2
 
     def getMin(self,elem1,elem2):
-        if(elem1 < elem2):
+        if(elem1<=elem2):
             return elem1
         else :
             return elem2
 
         
     def showRules(self):
+        '''
+        Afficher les régles du jeu
+        '''
         print(""" 
                     *  *  *  *  *  *  *  *  *  *  * Bienvenue *  *  *  *  *  *  *  *  *\n
                     Le jeu comporte 3 levels avec la possibilié que le joueur choissise son level (si ce n'est pas sa 1è fois dans le Casino).
@@ -270,6 +278,9 @@ class Game:
                     """)
 
     def show(self) :
+        '''
+        Afficher les stats du joueur de la partie terminée
+        '''
         print ("""\t************ Vos meilleures stats ************ \n
                 \t- Réponse dés le premier coup : {}!\n
                 \t- Gain Maximal : {} € !\n

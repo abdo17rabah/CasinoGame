@@ -2,9 +2,12 @@
 from Player import *
 
 class Stats:
+    #Classe qui permet d'afficher les stats d'un joueur
     
     #Const
     TIMEOUT = 10
+
+    #Constructeur
     def __init__(self):
         self.maxLevel=1
         self.maxMise=0
@@ -14,7 +17,48 @@ class Stats:
         # self.idPlayer = None
         self.firstTriesCount = 0
 
+    #Setters
+    def setMaxlevel(self,level):
+        self.maxLevel=level
+
+    def setMaxMise(self,maxMise):
+        self.maxMise=maxMise
+
+    def setMiseMin(self,miseMin):
+        self.miseMin=miseMin
+
+    def setGainMax(self,gainMax):
+        self.gainMax=gainMax
+
+    def setMaxLoss(self,maxLoss):
+        self.maxLoss=maxLoss
+
+    def setFirstTriesCount(self,firstTriesCount):
+        self.firstTriesCount=firstTriesCount
+
+    #Getters
+    def getMaxlevel(self):
+        return self.maxLevel
+
+    def getmaxMise(self):
+        return self.maxMise
+
+    def getMiseMin(self):
+        return self.miseMin
+
+    def getGainMax(self):
+        return self.gainMax
+
+    def getMaxLoss(self):
+        return self.maxLoss
+    
+    def getFirstTriesCount(self):
+        return self.firstTriesCount
+
     def updateAllStats(self,maxLevel,maxMise,gainMax,firstTriesCount,gainMin,maxLoss):
+        '''
+        Mettre à jour toutes les stats du joueur
+        '''
         self.maxLevel=maxLevel
         self.maxMise=maxMise
         self.gainMin=gainMin
@@ -22,43 +66,10 @@ class Stats:
         self.maxLoss=maxLoss
         self.firstTriesCount = firstTriesCount
 
-    def setMaxlevel(self,level):
-        self.maxLevel=level
-    
-    def getMaxlevel(self):
-        return self.maxLevel
-
-    def setMaxMise(self,maxMise):
-        self.maxMise=maxMise
-    
-    def getmaxMise(self):
-        return self.maxMise
-
-    def setMiseMin(self,miseMin):
-        self.miseMin=miseMin
-    
-    def getMiseMin(self):
-        return self.miseMin
-
-    def setGainMax(self,gainMax):
-        self.gainMax=gainMax
-    
-    def getGainMax(self):
-        return self.gainMax
-
-    def setMaxLoss(self,maxLoss):
-        self.maxLoss=maxLoss
-    
-    def getMaxLoss(self):
-        return self.maxLoss
-    
-    def setFirstTriesCount(self,firstTriesCount):
-        self.firstTriesCount=firstTriesCount
-    
-    def getFirstTriesCount(self):
-        return self.firstTriesCount
-
     def show(self) :
+        '''
+        Afficher les stats du joueur
+        '''
         print ("""************ Vos meilleures stats ************ \n
                 \t- Réponse dés le premier coup : {}!\n
                 \t- Gain Maximal : {}!\n
