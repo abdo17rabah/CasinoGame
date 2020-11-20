@@ -28,6 +28,8 @@
 * CasinoGame : Main class qui permet de lancer le jeu
 * DB: Class qui permet de gérer les accés à la DB et de récuperer les données 
 
+![alt text](Capture d’écran 2020-11-20 à 13.25.59.png?raw=true)
+
 ![Alt text](CasinoGame/Capture d’écran 2020-11-20 à 13.27.21.png?raw=true "Class Diagramm")
 ![Alt text](CasinoGame/Tableau vierge.png?raw=true "Usecase Diagramm")
 ![Alt text](CasinoGame/Capture d’écran 2020-11-20 à 13.25.59.png?raw=true "DB Structure")
