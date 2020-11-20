@@ -74,6 +74,7 @@ class Game:
 
         #TODO: Verify the count of miseMin
         self.miseMin=self.player.getSolde()
+        self.gainMin = self.player.getSolde()
         playQuestion = self.askPlayer()
         while(self.dotation != 0 and playQuestion == True):
             while True:
@@ -137,7 +138,7 @@ class Game:
 
                     self.dotation = (self.player.getSolde()-self.mise)+(self.mise*cote)
                     self.gain += (self.mise*cote)-self.mise
-                    self.gainMin+=(self.miseMin * cote)-self.miseMin
+                    self.gainMin =self.getMin(self.gainMin, self.gain)
                     self.player.setSolde(self.dotation)
                     self.maxLevel=self.getMax(self.level,self.maxLevel)
                     self.db.updateStats('gainMin', self.gainMin,self.idPlayer,name_user,self.idGame['id'])
@@ -239,7 +240,7 @@ class Game:
             return elem2
 
     def getMin(self,elem1,elem2):
-        if(elem1<=elem2):
+        if(elem1 < elem2):
             return elem1
         else :
             return elem2
