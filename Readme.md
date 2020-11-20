@@ -28,14 +28,6 @@
 * CasinoGame : Main class qui permet de lancer le jeu
 * DB: Class qui permet de gérer les accés à la DB et de récuperer les données 
 
-![GitHub Logo](Capture d’écran 2020-11-20 à 13.25.59.png)
-Format: ![Alt Text](url)
-
-![Alt text](Capture d’écran 2020-11-20 à 13.27.21.png?raw=true "Class Diagramm")
-![Alt text](Tableau vierge.png?raw=true "Usecase Diagramm")
-![Alt text](Capture d’écran 2020-11-20 à 13.25.59.png?raw=true "DB Structure")
-
-
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#demarrage)
 
 ## Démarrage du Jeu
