@@ -6,7 +6,6 @@
 * [Présentation](#intro)
 * [Structure : Les classes](#structure)
 * [Démarrage du Jeu](#demarrage)
-* [Captures d'écrans](#captures)
 * [Requirements du Project](#requirements)
 * [Améliorations](#amelioration)
 * [Groupe](#groupe) 
