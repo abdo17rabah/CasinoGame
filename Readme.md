@@ -31,7 +31,8 @@
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#demarrage)
 
 ## Démarrage du Jeu
-Si vous avez Python installé, lancez:
+* Créer un base de données avec le nom ```casino``` et exécuter le script sql ```casino.sql```.
+* Si vous avez Python installé, lancez:
 ```bash
 python CasinoGame.py
 ```
